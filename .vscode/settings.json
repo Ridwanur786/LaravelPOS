@@ -1,0 +1,8 @@
+{
+    "emmet.includeLanguages": {
+        "blade": "html"
+    },
+    "emmet.showSuggestionsAsSnippets": true,
+    "emmet.triggerExpansionOnTab": true,
+    "blade.format.enable": true
+}
