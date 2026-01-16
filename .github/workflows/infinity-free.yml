@@ -24,6 +24,6 @@ jobs:
           server: ftpupload.net
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /https://dash.infinityfree.com/accounts/if0_40825485/domains/laravelpos.42web.io/htdocs/Pos_system  # For addon domains
+          server-dir: /https://dash.infinityfree.com/accounts/if0_40825485/domains/laravelpos.42web.io/htdocs/Pos_system/  # For addon domains
           timeout: 86400000
           log-level: standard
