@@ -1,15 +1,17 @@
 <?php
 
-use App\Http\Controllers\CompanyController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\OrderDetailController;
+use App\Http\Controllers\VendorController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\OrderDetailController;
 use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\VendorController;
-use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,9 +28,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-//Auth::routes();
+Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::resource('orders',OrderController::class);
 Route::resource('order_details',OrderDetailController::class);
 Route::resource('products',ProductController::class);

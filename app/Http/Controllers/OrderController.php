@@ -63,7 +63,7 @@ class OrderController extends Controller
             $order_id = $order->id;
 
             //orders details model
-        for ($product_id=0; $product_id < \count($request->product_id); $product_id++) { 
+        for ($product_id=0; $product_id < count((array)$request->product_id); $product_id++) { 
 
             $orders_details = new Order_detail();
             $orders_details->order_id = $order_id;
@@ -77,7 +77,7 @@ class OrderController extends Controller
 
         $transactions = new Transaction();
         $transactions->order_id= $order_id;
-        $transactions->user_id= \auth()->user()->id;
+        $transactions->user_id= auth()->user()->id;
         $transactions->paid_amount= $request->paid_amount;
         $transactions->balance = $request->balance;
         $transactions->payment_method = $request->payment_method;

@@ -2,23 +2,66 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
+use App\Services\ProductService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Picqer;
+use Yajra\DataTables\Facades\DataTables;
+use App\Providers\AppServiceProvider;
 
-use function GuzzleHttp\Promise\all;
+//use function GuzzleHttp\Promise\all;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response|\Illuminate\Contracts\View\View
      */
-    public function index()
+    public function index(Request $request): JsonResponse|\Illuminate\Http\Response|\Illuminate\Contracts\View\View
     {
-        $products = Product::paginate(5);
-        return view('products.index',['products'=> $products]);
+
+        if ($request->ajax()) {
+            return DataTables::of(Product::query())
+                ->addIndexColumn()
+                ->editColumn('quantity', fn ($product) => $product->quantity == 0
+                    ? '<span class="badge rounded-pill bg-info text-white"> 0</span>'
+                    : ($product->quantity <=  $product->alert_stock
+                        ? "<span class=\"badge rounded-pill bg-warning text-white\">{$product->quantity}</span>"
+                        : "<span class=\"badge rounded-pill bg-success text-white\">{$product->quantity}</span>"))
+                ->addColumn('status', function ($product) {
+
+                    if ($product->quantity == 0) {
+                        return '<span class="badge rounded-pill bg-info text-white"> OUT OF STOCK</span>';
+                    }
+
+                    if ($product->quantity <=  $product->alert_stock) {
+                        return '<span class="badge rounded-pill bg-warning text-white"> STOCK LOW</span>';
+                    }
+
+
+                    return '<span class="badge rounded-pill bg-success text-white">IN STOCK</span>';
+                })
+                ->addColumn('barcode', fn ($product) => "<button class=\"btn btn-secondary btn-sm me-md-2 view-barcode\" type=\"button\"
+                                                    data-id=\"{$product->id}\" data-bs-toggle=\"offcanvas\"
+                                                    data-bs-target=\"#offcanvasLeft\"><i
+                                                        class=\"bi bi-eye\"></i> </button>")
+                ->addColumn('action', fn ($product) => "<div class=\"d-grid gap-2 d-md-flex justify-content-md-center\">
+                                                <button class=\"btn btn-secondary btn-sm me-md-2 editProduct\" type=\"button\"
+                                                    data-bs-toggle=\"offcanvas\"
+                                                    data-bs-target=\"#offcanvasScrolling\" data-id=\"{$product->id}\"><i
+                                                        class=\"bi bi-pencil\"></i></button>
+                                                <button class=\"btn btn-danger btn-sm\" type=\"button\"
+                                                    data-bs-toggle=\"offcanvas\"
+                                                    data-bs-target=\"#offcanvasTop\" data-id=\"{$product->id}\"><i
+                                                        class=\"bi bi-trash2\"></i></button>
+                                            </div>")
+                ->rawColumns(['quantity', 'status', 'barcode', 'action'])
+                ->make(true);
+        }
+        return view('products.index');
     }
 
     /**
@@ -37,33 +80,12 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request, ProductService $productService)
     {
-        //var_dump(return $request->all());
-        //dd($request);
-         $randomcode = rand('012345678', '100000000');
-         $red = '244, 0, 0';
 
-        $generator = new Picqer\Barcode\BarcodeGeneratorHTML();
-        $barcodes = $generator->getBarcode($randomcode, $generator::TYPE_STANDARD_2_5,2,60);
+        $product = $productService->store($request->validated());
 
-     Product::create($request->all());
-
-     
-
-      $products = new Product();
-      $products->product_name = $request->product_name;
-      $products->description = $request->description;
-      $products->brand = $request->brand;
-      $products->price = $request->price;
-      $products->quantity = $request->quantity;
-      $products->product_code = $randomcode;
-      $products->barcode = $barcodes;
-      $products->alert_stock = $request->alert_stock;
-      $products->save();
-
-            return redirect()->back()->with('Success','Product Added Successfully');
-   
+        return response()->ajaxSuccess($product, 'Product added successfully', 201);
     }
 
     /**
@@ -74,7 +96,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        return response()->ajaxSuccess($product);
     }
 
     /**
@@ -85,7 +107,7 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+        return response()->ajaxSuccess($product);
     }
 
     /**
@@ -95,31 +117,17 @@ class ProductController extends Controller
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(StoreProductRequest $request, Product $product, ProductService $productUpdateService)
     {
-        
-        $randomcode = rand('012345678', '100000000');
-          $red = '244, 0, 0';
 
-        $generator = new Picqer\Barcode\BarcodeGeneratorHTML();
-        $barcodes = $generator->getBarcode($randomcode, $generator::TYPE_STANDARD_2_5,2,60);
+        $productUpdateService->update($product, $request->validated);
 
-    //   Product::create($request->all());
-
-     
-     // $product = Product::find($product);
-      $product->product_name = $request->product_name;
-      
-      $product->description = $request->description;
-      $product->brand = $request->brand;
-      $product->price = $request->price;
-      $product->quantity = $request->quantity;
-      $product->product_code = $randomcode;
-      $product->barcode = $barcodes;
-      $product->alert_stock = $request->alert_stock;
-      $product->save();
-
-        return back()->with('success', 'product updated successfully');
+        return response()->ajaxSuccess([
+           
+            "Product Updated Successfully",
+            $productUpdateService,
+            200
+        ]);
     }
 
     /**
@@ -131,12 +139,12 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
-        return back()->with('success', 'user deleted successfully');
+        return response()->ajaxSuccess(null, 'Product deleted successfully', 200);
     }
 
-    public function GetProductBarcodes()
-    {
-        $productsBarcode = Product::select('barcode', 'product_code')->get();
-        return view('products.barcode.index', compact('productsBarcode'));
-    }
+    // public function GetProductBarcodes()
+    // {
+    //     $productsBarcode = Product::select('barcode', 'product_code')->get();
+    //     return view('products.barcode.index', compact('productsBarcode'));
+    // }
 }

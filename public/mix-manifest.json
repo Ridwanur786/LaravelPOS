@@ -1,5 +1,8 @@
 {
     "/js/app.js": "/js/app.js",
     "/js/custom.js": "/js/custom.js",
-    "/css/app.css": "/css/app.css"
+    "/js/dataTable.js": "/js/dataTable.js",
+    "/css/app.css": "/css/app.css",
+    "/fonts/vendor/bootstrap-icons/bootstrap-icons.woff2?a13b815539b49de48d2358b4281b2f1a": "/fonts/vendor/bootstrap-icons/bootstrap-icons.woff2?a13b815539b49de48d2358b4281b2f1a",
+    "/fonts/vendor/bootstrap-icons/bootstrap-icons.woff?c1d7432ee75fa194e49925c1b9009cb0": "/fonts/vendor/bootstrap-icons/bootstrap-icons.woff?c1d7432ee75fa194e49925c1b9009cb0"
 }

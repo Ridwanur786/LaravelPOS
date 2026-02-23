@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Http\Response;
+use App\Services\ProductService;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Routing\ResponseFactory;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -14,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(\App\Services\ProductService::class);
     }
 
     /**
@@ -24,6 +27,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Paginator::useBootstrap();
+        
+        ResponseFactory::macro('ajaxSuccess', function (mixed $data = null, string $message = 'product created Successfully', int $status = 200) {
+            return response()->json([
+                'status' => 'success',
+                'message' => $message,
+                'data' => $data
+            ], $status);
+        });
+
+    
+
+        //Paginator::useBootstrap();
     }
 }

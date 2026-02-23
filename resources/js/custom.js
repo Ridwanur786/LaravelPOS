@@ -1,7 +1,7 @@
-JQuery(document).ready(function(JQuery){
- JQuery('.add_more').on('click',function(){
-    var product = JQuery('.product_id').html();
-    var numberOfRow = (JQuery('.addMoreProduct tr').length-0)+ 1;
+$(function(){
+ $('.add_more').on('click',function(){
+    var product = $('.product_id').html();
+    var numberOfRow = ($('.addMoreProduct tr').length-0)+ 1;
     var tr = '<tr><td class="no">' + numberOfRow + '</td>'+
     '<td> <select name="product_id[]" id="prdouct_id" class="form-control form-control-sm product_id">'
     + product + '</select></td>'+  
@@ -20,25 +20,25 @@ JQuery(document).ready(function(JQuery){
    '<td>' +
   ' <a href="#" class="btn btn-sm btn-outline-secondary delete"><i class="bi bi-x-circle"></i></a>' +
   '</td>'; 
-   JQuery('.addMoreProduct').append(tr);
+   $('.addMoreProduct').append(tr);
  });
 
- JQuery('.addMoreProduct').delegate('.delete','click', function(){
-    JQuery(this).parent().parent().remove();
+ $('.addMoreProduct').delegate('.delete','click', function(){
+    $(this).parent().parent().remove();
     totalAmountCalculation();
  });
 
  function totalAmountCalculation(){
     var total = 0;
-    JQuery('.total_amount').each(function(i,e){
-       var amount = JQuery(this).val()-0;
+    $('.total_amount').each(function(i,e){
+       var amount = $(this).val()-0;
        total+= amount;
     } );
-    JQuery('.total').html(total);
+    $('.total').html(total);
 
  }
- JQuery('.addMoreProduct').delegate('.product_id','change', function(){
-    var tr=JQuery(this).parent().parent();
+ $('.addMoreProduct').delegate('.product_id','change', function(){
+    var tr=$(this).parent().parent();
     var price =tr.find('.product_id option:selected').attr('data-price');
     tr.find('.price').val(price);
 
@@ -50,8 +50,8 @@ JQuery(document).ready(function(JQuery){
     totalAmountCalculation();
  });
 
- JQuery('.addMoreProduct').delegate('.quantity, .discount','keyup', function(){
-    var tr =JQuery(this).parent().parent();
+ $('.addMoreProduct').delegate('.quantity, .discount','keyup', function(){
+    var tr =$(this).parent().parent();
     var qty = tr.find('.quantity').val()-0;
     var discount =tr.find('.discount').val()-0;
     var price =tr.find('.price').val()-0;
@@ -60,11 +60,11 @@ JQuery(document).ready(function(JQuery){
     totalAmountCalculation();
  });
 
-JQuery("#paid_amount").keyup(function () {
-   var total = JQuery('.total').html();
-   var paid_amount = JQuery(this).val();
+$("#paid_amount").keyup(function () {
+   var total = $('.total').html();
+   var paid_amount = $(this).val();
    var returnAmount = paid_amount - total;
-   JQuery('#balance').val(returnAmount).toFixed(2);
+   $('#balance').val(returnAmount).toFixed(2);
 });
 
 function printReceipt() {
@@ -83,9 +83,148 @@ var data = "<input type='button' class='btn btn-sm btn-outline-primary printPage
    }, 8000);
 }
 //printReceipt(el);
-JQuery(document).on('click', '#printbutton', function(){
+$(document).on('click', '#printbutton', function(){
    printReceipt();
    //console.log('hi');
 });
 
- });
+});
+
+$(function(){
+
+
+   
+let productsData = $('#productsData').DataTable({
+   processing: true,
+   serverSide: true,
+   responsive: true,
+   pagingType: 'full_numbers',
+   scrollX: true,
+   autoWidth: false,
+   lengthMenu: [
+          [10, 25, 50, -1],
+          [10, 25, 50, "All"]
+        ],
+   ajax:{
+      url: "/products"},
+   columns: [
+            { data: 'DT_RowIndex', orderable:false, searchable:false },
+            { data: 'product_name' },
+            { data: 'description' },
+            { data: 'brand' },
+            { data: 'quantity', orderable: false },
+            { data: 'product_code' },
+            { data: 'barcode', orderable: false, searchable: false },
+            { data: 'price' },
+            { data: 'status', orderable: false, searchable: false },
+            { data: 'action', orderable: false, searchable: false }
+        ]
+
+});
+//productsData;
+
+  function showCanvasMessage(type, message) {
+     const box = $("#offcanvasMessage");
+     box.removeClass('alert-success alert-danger alert-warning d-none');
+
+     switch(type) {
+         case 'success':
+            box.addClass('alert-success');
+            break;
+         case 'warning':
+            box.addClass('alert-warning');
+            break;
+         case 'error':
+            box.addClass('alert-danger');
+            break;
+          default:
+            box.addClass('alert-danger');
+     }    
+     box.text(message || 'Something went wrong!');
+     box.removeClass('d-none');
+
+     setTimeout(() => {
+      box.addClass('d-none');
+
+      const canvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasRight'));
+      
+      if(canvas) canvas.hide();
+         
+
+            productsData.ajax.reload(null, false);
+        }, 2000);
+  }
+
+
+$('#productForm').on('submit', function (e) {
+        e.preventDefault();
+       
+        $.ajax({
+            url: '/products',
+            type: "POST",
+            data: $(this).serialize(),
+            success: function (res) {
+               showCanvasMessage('success', res.message);
+               // $('#offcanvasRight').offcanvas('hide');
+                $('#productForm')[0].reset();
+
+               // productsData.ajax.reload(null, false);
+
+                
+            },
+            error: function (xhr) {
+               const res = xhr.responseJSON;
+
+                if (xhr.status === 422) {
+                showCanvasMessage('error', 'Validation failed');
+            } else if (xhr.status === 403) {
+                showCanvasMessage('warning', res?.message ?? 'Unauthorized');
+            } else {
+                showCanvasMessage('error', res?.message ?? 'Server error');
+            }
+        
+               }
+        });
+    });
+
+
+    $(document).on('click', '.editProduct', function(){
+
+      const productId = $(this).data('id');
+
+      $.get('/products/' + productId + '/edit', function(res){
+
+       $('#edit_id').val(res.data.id);
+        $('#edit_product_name').val(res.data.product_name);
+        $('#edit_description').val(res.data.description);
+        $('#edit_brand').val(res.data.brand);
+        $('#edit_quantity').val(res.data.quantity);
+        $('#edit_price').val(res.data.price);
+        $('#edit_alert_stock').val(res.data.alert_stock);
+        $('#edit_product_code').val(res.data.product_code);
+
+    });
+});
+
+
+$('#editProductForm').on('submit', function (e) {
+        e.preventDefault();
+         const id = $('#edit_id').val();
+
+         $.ajax({
+            url: '/products/' + id,
+            type: "PUT",
+            data:$(this).serialize(),
+            success: function (res) {
+               showCanvasMessage('success', res.message);
+                    $('#editProductForm')[0].reset();
+                    const canvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasScrolling'));
+                    if(canvas) canvas.hide();
+            },
+         });
+
+      });
+
+
+
+});
