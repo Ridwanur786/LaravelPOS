@@ -33,7 +33,7 @@ Auth::routes();
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::resource('orders',OrderController::class);
 Route::resource('order_details',OrderDetailController::class);
-Route::resource('/Pos_system/public/products',ProductController::class);
+Route::resource('products',ProductController::class);
 Route::resource('companies',CompanyController::class);
 Route::resource('settings',SettingController::class);
 Route::resource('vendors',VendorController::class);
