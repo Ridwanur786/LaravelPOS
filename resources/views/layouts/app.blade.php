@@ -16,9 +16,11 @@
 <!-- If it fails to load, use local copy of jQuery -->
 {{-- <script>window.jQuery || document.write('<script src="/js/jquery-3.3.1.min.js"><\/script>');</script> --}}
     <script>
-    window.routes = {
-        productsIndex: "{{ route('products.index') }}",
-        productsStore: "{{ route('products.store') }}"
+    window.App = {
+        routes: {
+            productsIndex: "{{ route('products.index') }}",  // For DataTables GET
+            productsStore: "{{ route('products.store') }}"   // For form POST
+        }
     };
 </script>
     <script src="{{ asset('js/app.js') }}"></script>

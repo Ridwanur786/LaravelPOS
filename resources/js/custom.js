@@ -92,7 +92,11 @@ $(document).on('click', '#printbutton', function(){
 
 $(function(){
 
-
+  $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
    
 let productsData = $('#productsData').DataTable({
    processing: true,
@@ -106,7 +110,7 @@ let productsData = $('#productsData').DataTable({
           [10, 25, 50, "All"]
         ],
    ajax:{
-      url: "/products"},
+      url: App.routes.productsIndex},
    columns: [
             { data: 'DT_RowIndex', orderable:false, searchable:false },
             { data: 'product_name' },
@@ -160,7 +164,7 @@ $('#productForm').on('submit', function (e) {
         e.preventDefault();
        
         $.ajax({
-            url: '/products',
+            url: App.routes.productsStore,
             type: "POST",
             data: $(this).serialize(),
             success: function (res) {
