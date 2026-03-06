@@ -110,7 +110,8 @@ let productsData = $('#productsData').DataTable({
           [10, 25, 50, "All"]
         ],
    ajax:{
-      url: App.routes.productsIndex},
+     url: "{{ route('products.index') }}"
+   },
    columns: [
             { data: 'DT_RowIndex', orderable:false, searchable:false },
             { data: 'product_name' },
