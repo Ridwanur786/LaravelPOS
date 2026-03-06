@@ -23,7 +23,7 @@
         }
     };
 
-     console.log('Products Index URL:', window.App.routes.productsIndex);
+     //console.log('Products Index URL:', window.App.routes.productsIndex);
 </script>
     <script src="{{ asset('js/app.js') }}"></script>
     
@@ -121,6 +121,8 @@
         </div>
     </div>
     @livewireScripts
+
+    @stack('scripts')
 </body>
 </html>
 

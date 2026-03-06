@@ -165,7 +165,7 @@ $('#productForm').on('submit', function (e) {
         e.preventDefault();
        
         $.ajax({
-            url: App.routes.productsStore,
+            url: "{{ route('products.store') }}",
             type: "POST",
             data: $(this).serialize(),
             success: function (res) {
