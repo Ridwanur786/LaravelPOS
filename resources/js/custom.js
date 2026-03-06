@@ -172,7 +172,7 @@ $('#productForm').on('submit', function (e) {
                // $('#offcanvasRight').offcanvas('hide');
                 $('#productForm')[0].reset();
 
-               // productsData.ajax.reload(null, false);
+                productsData.ajax.reload(null, false);
 
                 
             },
