@@ -1,6 +1,5 @@
 name: Deploy to InfinityFree
 
-# Run manually or on push to the main branch
 on:
   workflow_dispatch:
   push:
@@ -9,21 +8,59 @@ on:
 
 jobs:
   deploy:
-    name: Deploy via FTP
+    name: Build & Deploy via FTP
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Clone the latest code from GitHub
-      - name: Get latest code
+      - name: Checkout latest code
         uses: actions/checkout@v4
 
-      # Step 2: Upload code via FTP
-      - name: Deploy to InfinityFree via FTP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2.12'          # adjust if needed
+          extensions: mbstring, dom, fileinfo, zip, pdo_mysql
+          tools: composer@v2.6.5
+
+      - name: Install composer dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'              # use LTS version
+
+      - name: Install npm dependencies
+        run: |
+          npm ci
+          npm run development              # change to 'development' if you prefer unminified assets
+
+      - name: Create .env file from secrets
+        run: |
+          cp .env.example .env
+          sed -i 's|APP_KEY=.*|APP_KEY=${{ secrets.APP_KEY }}|' .env
+          sed -i 's|DB_HOST=.*|DB_HOST=${{ secrets.DB_HOST }}|' .env
+          sed -i 's|DB_DATABASE=.*|DB_DATABASE=${{ secrets.DB_DATABASE }}|' .env
+          sed -i 's|DB_USERNAME=.*|DB_USERNAME=${{ secrets.DB_USERNAME }}|' .env
+          sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|' .env
+
+      - name: Flatten public folder for InfinityFree
+        run: |
+          # Move all contents of public/ to project root
+          cp -r public/* .
+          # Remove the now-empty public folder
+          rm -rf public
+          # Set proper permissions
+          chmod -R 755 storage bootstrap/cache
+          # Create required storage directories
+          mkdir -p storage/app/public storage/framework/{sessions,views,cache} storage/logs
+
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftpupload.net
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /laravelpos.42web.io/htdocs/Pos_system/  # For addon domains
+          server-dir: /laravelpos.42web.io/htdocs/Pos_system/
           timeout: 86400000
           log-level: standard
