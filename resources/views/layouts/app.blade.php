@@ -22,6 +22,8 @@
             productsStore: "{{ route('products.store') }}"   // For form POST
         }
     };
+
+     console.log('Products Index URL:', window.App.routes.productsIndex);
 </script>
     <script src="{{ asset('js/app.js') }}"></script>
     
