@@ -46,12 +46,8 @@ jobs:
           sed -i 's|DB_USERNAME=.*|DB_USERNAME=${{ secrets.DB_USERNAME }}|' .env
           sed -i 's|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|' .env
 
-      - name: Flatten public folder for InfinityFree
+      - name: Make folder for uploading on InfinityFree
         run: |
-          # Move all contents of public/ to project root
-          cp -r public/* .
-          # Remove the now-empty public folder
-          rm -rf public
           # Set proper permissions
           chmod -R 755 storage bootstrap/cache
           # Create required storage directories
@@ -66,3 +62,35 @@ jobs:
           server-dir: /laravelpos.42web.io/htdocs/Pos_system/
           timeout: 86400000
           log-level: standard
+
+
+# my yml is look like this
+# name: Deploy to InfinityFree
+
+# # Run manually or on push to the main branch
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     name: Deploy via FTP
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # Step 1: Clone the latest code from GitHub
+#       - name: Get latest code
+#         uses: actions/checkout@v4
+
+#       # Step 2: Upload code via FTP
+#       - name: Deploy to InfinityFree via FTP
+#         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+#         with:
+#           server: ftpupload.net
+#           username: ${{ secrets.FTP_USERNAME }}
+#           password: ${{ secrets.FTP_PASSWORD }}
+#           server-dir: /laravelpos.42web.io/htdocs/Pos_system/  # For addon domains
+#           timeout: 86400000
+#           log-level: standard
